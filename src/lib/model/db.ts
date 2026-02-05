@@ -1,4 +1,4 @@
-// import { sql } from '@vercel/postgres';
+import { sql } from '@vercel/postgres';
 import { Pool, type QueryResult, type QueryResultRow } from 'pg';
 import { POSTGRES_URL } from '$env/static/private';
 
@@ -26,4 +26,4 @@ const localDb = {
 };
 
 // Export the appropriate interface based on an environment
-export const db = localDb;
+export const db = process.env.NODE_ENV === 'production' ? { query: sql } : localDb;
