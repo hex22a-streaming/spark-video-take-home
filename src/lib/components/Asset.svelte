@@ -2,7 +2,6 @@
 	import type { AssetPopulated } from '$lib/definitions';
 
 	const { asset }: { asset: AssetPopulated } = $props();
-	console.log(asset);
 </script>
 
 <div class="rounded-lg border border-gray-200 p-4 text-xs">
