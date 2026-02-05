@@ -53,9 +53,26 @@ pnpm test:unit
 
 ##### /api/preview
 
+Empty JSON input:
+```shell
+curl -X POST -i \
+http://localhost:5173/api/preview \
+-H "Content-Type: application/json" \
+
+HTTP/1.1 400 Bad Request
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 21:28:39 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Unexpected end of JSON input"}
+```
+
 Malformed JSON input:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/preview \
 -H "Content-Type: application/json" \
@@ -73,7 +90,7 @@ Transfer-Encoding: chunked
 
 Unsupported Platform:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/preview \
 -H "Content-Type: application/json" \
@@ -91,7 +108,7 @@ Transfer-Encoding: chunked
 
 New video added:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/preview \
 -H "Content-Type: application/json" \
@@ -109,7 +126,7 @@ Transfer-Encoding: chunked
 
 Existing Video:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/preview \
 -H "Content-Type: application/json" \
@@ -127,9 +144,26 @@ Transfer-Encoding: chunked
 
 ##### /api/assets
 
+Empty JSON input:
+```shell
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+
+HTTP/1.1 400 Bad Request
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 21:25:37 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Unexpected end of JSON input"}
+```
+
 Malformed JSON input:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/assets \
 -H "Content-Type: application/json" \
@@ -146,7 +180,7 @@ Transfer-Encoding: chunked
 ```
 
 Unsupported Platform:
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/assets \
 -H "Content-Type: application/json" \
@@ -162,9 +196,26 @@ Transfer-Encoding: chunked
 {"error":"Unsupported platform"}
 ```
 
+Empty tags:
+```shell
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.youtube.com/watch?v=AcUWbEqvAao", "tags": [] }'
+HTTP/1.1 422 Unprocessable Entity
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 21:39:57 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Tags cannot be empty"}
+```
+
 New URL added:
 
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/assets \
 -H "Content-Type: application/json" \
@@ -181,7 +232,7 @@ Transfer-Encoding: chunked
 ```
 
 Existing URL: (though the asset was still created but using the existing Video entity therefore 201)
-```
+```shell
 curl -X POST -i \
 http://localhost:5173/api/assets \
 -H "Content-Type: application/json" \

@@ -6,13 +6,20 @@ import { createAsset } from '$lib/model/data/asset.server';
 import { AssetRequestSchema, Z_ERROR_STATUS_CODE_MAP } from '$lib/shemas';
 import { z } from 'zod';
 import { constants } from 'http2';
-import { UNSUPPORTED_PLATFORM_ERROR_MESSAGE } from '$lib/constants';
+import {
+  EMPTY_TAGS_ERROR_MESSAGE,
+  UNEXPECTED_END_OF_JSON_ERROR_MESSAGE,
+  UNSUPPORTED_PLATFORM_ERROR_MESSAGE
+} from '$lib/constants';
 
 export const POST: RequestHandler = async ({ request }: { request: Request }) => {
-  const body = await request.json();
-
   try {
+    const body = await request.json();
+
     const { url, tags } = AssetRequestSchema.parse(body);
+    if (tags.length === 0) {
+      return new Response(JSON.stringify({ error: EMPTY_TAGS_ERROR_MESSAGE }), { status: constants.HTTP_STATUS_UNPROCESSABLE_ENTITY });
+    }
     let video: Video | undefined = await getVideoByUrl(url);
     let created: boolean = false;
 
@@ -37,6 +44,10 @@ export const POST: RequestHandler = async ({ request }: { request: Request }) =>
         case UNSUPPORTED_PLATFORM_ERROR_MESSAGE:
           return new Response(JSON.stringify({ error: UNSUPPORTED_PLATFORM_ERROR_MESSAGE }), {
             status: constants.HTTP_STATUS_UNPROCESSABLE_ENTITY
+          });
+        case UNEXPECTED_END_OF_JSON_ERROR_MESSAGE:
+          return new Response(JSON.stringify({ error: UNEXPECTED_END_OF_JSON_ERROR_MESSAGE }), {
+            status: constants.HTTP_STATUS_BAD_REQUEST
           });
         default:
           return new Response(

@@ -6,14 +6,17 @@ import {
   createVideo,
   getVideoByUrl,
 } from '$lib/model/data/video.server';
-import { UNSUPPORTED_PLATFORM_ERROR_MESSAGE } from '$lib/constants';
+import {
+  UNEXPECTED_END_OF_JSON_ERROR_MESSAGE,
+  UNSUPPORTED_PLATFORM_ERROR_MESSAGE
+} from '$lib/constants';
 import { PreviewRequestSchema, Z_ERROR_STATUS_CODE_MAP } from '$lib/shemas';
 import { z } from 'zod';
 
 export const POST: RequestHandler = async ({ request }: { request: Request }) => {
-  const body = await request.json();
-
   try {
+    const body = await request.json();
+
     const { url }: VideoRequest = PreviewRequestSchema.parse(body);
     const platform: VideoPlatform = getPlatform(url);
 
@@ -36,6 +39,10 @@ export const POST: RequestHandler = async ({ request }: { request: Request }) =>
         case UNSUPPORTED_PLATFORM_ERROR_MESSAGE:
           return new Response(JSON.stringify({ error: UNSUPPORTED_PLATFORM_ERROR_MESSAGE }), {
             status: constants.HTTP_STATUS_UNPROCESSABLE_ENTITY
+          });
+        case UNEXPECTED_END_OF_JSON_ERROR_MESSAGE:
+          return new Response(JSON.stringify({ error: UNEXPECTED_END_OF_JSON_ERROR_MESSAGE }), {
+            status: constants.HTTP_STATUS_BAD_REQUEST
           });
         default:
           return new Response(
