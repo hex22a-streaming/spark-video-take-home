@@ -1,42 +1,198 @@
-# sv
+# Spark Video Take Home
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+https://spark-video-take-home-9ojuxpzs3-hex22a-sparks-projects.vercel.app/
 
-## Creating a project
+## Project Setup
 
-If you're seeing this, you've probably already done this step. Congrats!
+Install dependencies:
 
-```sh
-# create a new project
-npx sv create my-app
+```shell
+pnpm install
 ```
 
-To recreate this project with the same configuration:
+Start local database:
 
-```sh
-# recreate this project
-pnpm dlx sv create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" playwright tailwindcss="plugins:forms" --install pnpm spark-video-take-home
+```shell
+docker run --rm \
+  --name spark-video-take-home-local \
+  -e POSTGRES_DB=spark-video \
+  -e POSTGRES_USER=pg \
+  -e POSTGRES_PASSWORD=pg \
+  -p 5434:5432 \
+  -v ./platform_tests/schema.sql:/docker-entrypoint-initdb.d/schema.sql \
+  postgres:latest
 ```
 
-## Developing
+Run server:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```shell
+pnpm dev
 ```
 
-## Building
+Running tests:
 
-To create a production version of your app:
+Platform tests (tests with a live database):
 
-```sh
-npm run build
+```shell
+./platform_tests/test.sh
 ```
 
-You can preview the production build with `npm run preview`.
+Unit tests:
+```shell
+pnpm test:unit
+```
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### Tech Stack
+
+**Framework:** SvelteKit because it doesn't require a runtime on the client (unlike React)
+**Persistence Layer:** PostgreSQL as a fast and reliable production database. SQL constraints are used to ensure data integrity.
+
+![db_diagram](db_diagram.png)
+
+#### API Routes testing
+
+##### /api/preview
+
+Malformed JSON input:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/preview \
+-H "Content-Type: application/json" \
+-d '{ "foo": "bar" }'
+HTTP/1.1 400 Bad Request
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:20:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Invalid input"}
+```
+
+Unsupported Platform:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/preview \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.yahoo.com/" }'
+HTTP/1.1 422 Unprocessable Entity
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:22:44 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Unsupported platform"}
+```
+
+New video added:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/preview \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.youtube.com/watch?v=6OXE65fjjsU" }'
+HTTP/1.1 201 Created
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:23:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"url":"https://www.youtube.com/watch?v=6OXE65fjjsU","platform":"youtube","existing_asset":null}
+```
+
+Existing Video:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/preview \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.youtube.com/watch?v=6OXE65fjjsU" }'
+HTTP/1.1 200 OK
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:24:28 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"url":"https://www.youtube.com/watch?v=6OXE65fjjsU","platform":"youtube","existing_asset":{"id":3,"url":"https://www.youtube.com/watch?v=6OXE65fjjsU","platform":"youtube","created_at":"2026-02-05T16:23:58.295Z"}}
+```
+
+##### /api/assets
+
+Malformed JSON input:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+-d '{ "foo": "bar" }'
+HTTP/1.1 400 Bad Request
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:26:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Invalid input"}
+```
+
+Unsupported Platform:
+```
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://yahoo.com", "tags": ["Motion"] }'
+HTTP/1.1 422 Unprocessable Entity
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:29:21 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Unsupported platform"}
+```
+
+New URL added:
+
+```
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.youtube.com/watch?v=C-WhjHqYhqg", "tags": ["Color"] }'
+HTTP/1.1 201 Created
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:32:17 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"asset":{"id":9,"tags":["Color"],"video_id":5,"created_at":"2026-02-05T16:32:17.055Z"},"created":true}
+```
+
+Existing URL: (though the asset was still created but using the existing Video entity therefore 201)
+```
+curl -X POST -i \
+http://localhost:5173/api/assets \
+-H "Content-Type: application/json" \
+-d '{ "url": "https://www.youtube.com/watch?v=C-WhjHqYhqg", "tags": ["Color"] }'
+HTTP/1.1 201 Created
+Vary: Origin
+content-type: text/plain;charset=UTF-8
+Date: Thu, 05 Feb 2026 20:33:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"asset":{"id":10,"tags":["Color"],"video_id":5,"created_at":"2026-02-05T16:33:11.380Z"},"created":false}
+```

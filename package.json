@@ -15,7 +15,6 @@
     "test:unit": "vitest",
     "test": "npm run test:unit -- --run && npm run test:e2e",
     "test:platform": "vitest --config vitest.platform.config.ts",
-    "test:ui": "vitest --config vitest.ui.config.ts",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
