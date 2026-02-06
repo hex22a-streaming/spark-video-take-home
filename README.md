@@ -1,6 +1,6 @@
 # Spark Video Take Home
 
-https://spark-video-take-home-9ojuxpzs3-hex22a-sparks-projects.vercel.app/
+https://spark-video-take-home.vercel.app/
 
 ## Project Setup
 
