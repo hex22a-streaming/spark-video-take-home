@@ -103,7 +103,7 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 Transfer-Encoding: chunked
 
-{"error":"Unsupported platform"}
+{"error":"Unsupported platform. Supported platforms: youtube, instagram, tiktok"}
 ```
 
 New video added:
@@ -193,7 +193,7 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 Transfer-Encoding: chunked
 
-{"error":"Unsupported platform"}
+{"error":"Unsupported platform. Supported platforms: youtube, instagram, tiktok"}
 ```
 
 Empty tags:

@@ -1,6 +1,7 @@
 export const ASSET_TYPES = ['Motion', 'Typography', 'Color', 'Sound design'];
+export const SUPPORTED_VIDEO_PLATFORMS = ['youtube', 'instagram', 'tiktok'];
 
-export type VideoPlatform = 'youtube' | 'instagram' | 'tiktok';
+export type VideoPlatform = (typeof SUPPORTED_VIDEO_PLATFORMS)[number];
 export type AssetType = (typeof ASSET_TYPES)[number];
 
 export type VideoRequest = {
